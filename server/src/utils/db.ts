@@ -4,11 +4,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Use DATABASE_URL if available (Railway), otherwise use individual vars (local dev)
-const connection = process.env.DATABASE_URL
-  ? {
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    }
+const connection: string | Knex.PgConnectionConfig = process.env.DATABASE_URL
+  ? process.env.DATABASE_URL
   : {
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '5432'),
