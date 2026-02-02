@@ -4,12 +4,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Use DATABASE_URL if available (Railway), otherwise use individual vars (local dev)
-const hasDbUrl = !!process.env.DATABASE_URL;
-console.log(`Database connection: using ${hasDbUrl ? 'DATABASE_URL' : 'individual vars'}`);
-if (hasDbUrl) {
-  console.log(`DATABASE_URL host: ${process.env.DATABASE_URL?.split('@')[1]?.split('/')[0]}`);
-}
-
 const connection: string | Knex.PgConnectionConfig = process.env.DATABASE_URL
   ? process.env.DATABASE_URL
   : {
