@@ -26,5 +26,5 @@ RUN npm install -g serve
 ENV PORT=8080
 EXPOSE 8080
 
-# Start
-CMD ["sh", "-c", "serve -s dist -l $PORT"]
+# Start - serve v14+ uses --listen flag with port number
+CMD serve -s dist --listen $PORT
