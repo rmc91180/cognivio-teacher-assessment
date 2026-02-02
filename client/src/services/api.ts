@@ -27,7 +27,12 @@ import type {
   AuditTargetType,
 } from '@/types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+// Production Railway URL hardcoded as fallback
+const PRODUCTION_API_URL = 'https://server-production-353d.up.railway.app';
+
+// Use VITE_API_URL if set, otherwise use production URL in production mode, or /api for local dev
+const API_BASE_URL = import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? PRODUCTION_API_URL : '/api');
 
 // Create axios instance
 const api = axios.create({
