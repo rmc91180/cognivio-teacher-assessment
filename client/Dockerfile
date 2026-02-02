@@ -26,5 +26,5 @@ RUN npm install -g serve
 ENV PORT=8080
 EXPOSE 8080
 
-# Start - serve v14+ uses --listen flag with port number
-CMD serve -s dist --listen $PORT
+# Start - use fixed port 8080 (Railway will route to it via PORT env var)
+CMD ["serve", "-s", "dist", "-l", "8080"]
