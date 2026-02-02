@@ -3,9 +3,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Build argument for API URL (required for Vite at build time)
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
+# Set API URL for Vite at build time
+# This is the Railway production server URL
+ENV VITE_API_URL=https://server-production-353d.up.railway.app
 
 # Copy package files
 COPY package*.json ./
