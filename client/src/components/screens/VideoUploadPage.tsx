@@ -38,7 +38,7 @@ export const VideoUploadPage: React.FC = () => {
   // Upload state
   const [uploadedVideoId, setUploadedVideoId] = useState<string | null>(null);
   const [processingStatus, setProcessingStatus] = useState<string | null>(null);
-  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  const [pollingInterval, setPollingInterval] = useState<ReturnType<typeof setInterval> | null>(null);
 
   // Fetch teachers on mount
   useEffect(() => {
