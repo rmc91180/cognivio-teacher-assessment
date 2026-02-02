@@ -141,8 +141,8 @@ export class VideoProcessingService {
           height: videoStream.height || 0,
           fps: eval(videoStream.r_frame_rate || '0') || 0,
           codec: videoStream.codec_name || 'unknown',
-          bitrate: metadata.format.bit_rate ? parseInt(metadata.format.bit_rate) : undefined,
-          size: metadata.format.size ? parseInt(metadata.format.size) : undefined,
+          bitrate: metadata.format.bit_rate ? parseInt(String(metadata.format.bit_rate)) : undefined,
+          size: metadata.format.size ? parseInt(String(metadata.format.size)) : undefined,
         });
       });
     });

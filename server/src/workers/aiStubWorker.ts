@@ -5,7 +5,7 @@
  * It processes pending videos and generates mock AI observations.
  *
  * Run with: npm run worker
- * Schedule with cron: */5 * * * * cd /path/to/server && npm run worker
+ * Schedule with cron: 0/5 * * * * cd /path/to/server && npm run worker
  *
  * TODO: Replace with real AI integration:
  * 1. Integrate with GPT-5.2 vision model or similar

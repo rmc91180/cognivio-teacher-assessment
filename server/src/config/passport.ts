@@ -48,7 +48,7 @@ export function configurePassport(): void {
               return done(new Error(result.error));
             }
 
-            return done(null, result.user);
+            return done(null, result.user as any);
           } catch (error) {
             return done(error as Error);
           }
@@ -96,7 +96,7 @@ export function configurePassport(): void {
               return done(new Error(result.error));
             }
 
-            return done(null, result.user);
+            return done(null, result.user as any);
           } catch (error) {
             return done(error as Error);
           }
@@ -117,7 +117,7 @@ export function configurePassport(): void {
   passport.deserializeUser(async (id: string, done) => {
     try {
       const user = await ssoService.getUserById(id);
-      done(null, user);
+      done(null, user as any);
     } catch (error) {
       done(error);
     }

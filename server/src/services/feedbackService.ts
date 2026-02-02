@@ -459,7 +459,7 @@ export const feedbackService = {
     }
 
     // Basic stats
-    const stats = await query.clone()
+    const stats: any = await query.clone()
       .select(
         db.raw('COUNT(*) as total_feedback'),
         db.raw('AVG(accuracy_rating) as avg_accuracy'),
@@ -474,7 +474,7 @@ export const feedbackService = {
       .select('overall_agreement', db.raw('COUNT(*) as count'));
 
     // Corrections stats
-    const correctionStats = await db('feedback_corrections')
+    const correctionStats: any = await db('feedback_corrections')
       .select(
         db.raw('COUNT(*) as total'),
         db.raw('AVG(ABS(score_difference)) as avg_diff')

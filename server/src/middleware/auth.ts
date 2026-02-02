@@ -4,14 +4,7 @@ import { AuthPayload, UserRole } from '../types';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key';
 
-// Extend Express Request to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: AuthPayload;
-    }
-  }
-}
+// Type declaration moved to src/types/express.d.ts
 
 /**
  * Middleware to authenticate JWT token
@@ -86,16 +79,13 @@ export function requireRoles(...roles: UserRole[]) {
  * Generate JWT token
  */
 export function generateToken(payload: AuthPayload): string {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '24h',
-  });
+  const expiresIn = process.env.JWT_EXPIRES_IN || '24h';
+  return jwt.sign(payload, JWT_SECRET, { expiresIn } as jwt.SignOptions);
 }
 
 /**
  * Generate refresh token
  */
 export function generateRefreshToken(userId: string): string {
-  return jwt.sign({ userId, type: 'refresh' }, JWT_SECRET, {
-    expiresIn: '7d',
-  });
+  return jwt.sign({ userId, type: 'refresh' }, JWT_SECRET, { expiresIn: '7d' } as jwt.SignOptions);
 }
