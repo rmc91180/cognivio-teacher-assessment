@@ -27,8 +27,8 @@ import type {
   AuditTargetType,
 } from '@/types';
 
-// Production Railway URL hardcoded as fallback
-const PRODUCTION_API_URL = 'https://server-production-353d.up.railway.app';
+// Production Railway URL hardcoded as fallback (includes /api prefix)
+const PRODUCTION_API_URL = 'https://server-production-353d.up.railway.app/api';
 
 // Use VITE_API_URL if set, otherwise use production URL in production mode, or /api for local dev
 const API_BASE_URL = import.meta.env.VITE_API_URL ||
