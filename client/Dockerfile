@@ -1,4 +1,5 @@
 # Client Dockerfile - Single stage for Railway
+# Build timestamp: 2026-02-02-19:30
 FROM node:20-alpine
 
 WORKDIR /app
