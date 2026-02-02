@@ -1,32 +1,37 @@
 # Client Dockerfile - Multi-stage build
+# Note: This Dockerfile is run from the repo root with npm workspaces
+
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
 # Set API URL for Vite at build time
-# This is the Railway production server URL
 ENV VITE_API_URL=https://server-production-353d.up.railway.app
 
-# Copy package files
+# Copy workspace root files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Copy client package files for workspace install
+COPY client/package*.json ./client/
 
-# Copy source code
-COPY . .
+# Install dependencies (workspace-aware)
+RUN npm ci --workspace=client --include-workspace-root
 
-# Build the application with environment variable
+# Copy client source code only
+COPY client/ ./client/
+
+# Build the client application
+WORKDIR /app/client
 RUN npm run build
 
 # Production stage with nginx
 FROM nginx:alpine
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy custom nginx config from client directory
+COPY client/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy built assets from builder
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Copy built assets from builder (client/dist)
+COPY --from=builder /app/client/dist /usr/share/nginx/html
 
 # Expose port
 EXPOSE 80
