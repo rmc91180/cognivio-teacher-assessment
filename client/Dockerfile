@@ -19,12 +19,11 @@ ENV VITE_API_URL=https://server-production-353d.up.railway.app
 # Build
 RUN npm run build
 
-# Install and use serve
-RUN npm install -g serve
+# Install http-server for serving static files
+RUN npm install -g http-server
 
-# Railway will use PORT env var, default to 8080
-ENV PORT=8080
+# Expose port 8080
 EXPOSE 8080
 
-# Start - use fixed port 8080 (Railway will route to it via PORT env var)
-CMD ["serve", "-s", "dist", "-l", "8080"]
+# Start http-server
+CMD ["http-server", "dist", "-p", "8080", "--proxy", "http://localhost:8080?"]
