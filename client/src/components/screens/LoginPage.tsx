@@ -136,8 +136,9 @@ export const LoginPage: React.FC = () => {
               className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               onClick={() => {
                 // Redirect to Microsoft OAuth endpoint
-                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                window.location.href = `${apiUrl}/api/auth/microsoft`;
+                // VITE_API_URL already includes /api, so use /auth directly
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+                window.location.href = `${apiUrl}/auth/microsoft`;
               }}
             >
               <svg className="w-5 h-5" viewBox="0 0 21 21">
@@ -154,8 +155,9 @@ export const LoginPage: React.FC = () => {
               className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               onClick={() => {
                 // Redirect to Google OAuth endpoint
-                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                window.location.href = `${apiUrl}/api/auth/google`;
+                // VITE_API_URL already includes /api, so use /auth directly
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+                window.location.href = `${apiUrl}/auth/google`;
               }}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">

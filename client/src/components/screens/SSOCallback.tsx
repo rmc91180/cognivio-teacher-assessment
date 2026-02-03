@@ -54,8 +54,8 @@ export function SSOCallback() {
           },
         });
 
-        // Also store in localStorage for persistence
-        localStorage.setItem('token', token);
+        // Also store in localStorage for persistence (must match key used by api.ts interceptor)
+        localStorage.setItem('auth_token', token);
         if (refreshToken) {
           localStorage.setItem('refreshToken', refreshToken);
         }

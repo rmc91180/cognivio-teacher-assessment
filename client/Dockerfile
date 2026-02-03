@@ -9,7 +9,7 @@ RUN npm ci
 
 # Copy source and build
 COPY . .
-ENV VITE_API_URL=https://server-production-353d.up.railway.app
+ENV VITE_API_URL=https://server-production-353d.up.railway.app/api
 RUN npm run build
 
 # Production with nginx
