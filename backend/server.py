@@ -481,7 +481,7 @@ async def get_frameworks(current_user: dict = Depends(get_current_user)):
             {
                 "type": "custom",
                 "name": "Custom (User defined)",
-                "domain_count": custom_domain_count,
+                "domain_count": 10 + custom_domain_count,
             },
         ]
     }
@@ -495,9 +495,14 @@ async def get_framework_details(
     elif framework_type == FrameworkType.MARSHALL:
         return MARSHALL_FRAMEWORK
     else:
-        domains = await db.custom_domains.find(
+        custom_domains = await db.custom_domains.find(
             {"user_id": current_user["id"]}, {"_id": 0, "user_id": 0}
         ).to_list(1000)
+        domains = (
+            DANIELSON_FRAMEWORK["domains"]
+            + MARSHALL_FRAMEWORK["domains"]
+            + custom_domains
+        )
         return {"name": "Custom Framework", "type": "custom", "domains": domains}
 
 
@@ -574,9 +579,14 @@ async def get_current_selection(current_user: dict = Depends(get_current_user)):
     if selection.get("framework_type") == "custom" and not selection.get(
         "selected_elements"
     ):
-        domains = await db.custom_domains.find(
+        custom_domains = await db.custom_domains.find(
             {"user_id": current_user["id"]}, {"_id": 0, "user_id": 0}
         ).to_list(1000)
+        domains = (
+            DANIELSON_FRAMEWORK["domains"]
+            + MARSHALL_FRAMEWORK["domains"]
+            + custom_domains
+        )
         element_ids = [
             el["id"] for domain in domains for el in domain.get("elements", [])
         ]

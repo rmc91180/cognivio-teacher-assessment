@@ -48,6 +48,15 @@ export function FrameworksPage() {
     }
   }, [selectionRes]);
 
+  const domains = useMemo(
+    () => frameworkDetailRes?.domains || [],
+    [frameworkDetailRes]
+  );
+  const customDomains = useMemo(
+    () => customDomainsRes?.domains || [],
+    [customDomainsRes]
+  );
+
   useEffect(() => {
     if (frameworkType !== "custom") {
       return;
@@ -55,14 +64,14 @@ export function FrameworksPage() {
     if (selectedElements.length) {
       return;
     }
-    if (!customDomains.length) {
+    if (!domains.length) {
       return;
     }
-    const allElements = customDomains.flatMap((domain) =>
+    const allElements = domains.flatMap((domain) =>
       (domain.elements || []).map((el) => el.id)
     );
     setSelectedElements(allElements);
-  }, [frameworkType, customDomains, selectedElements.length]);
+  }, [frameworkType, domains, selectedElements.length]);
 
   const saveSelectionMutation = useMutation({
     mutationFn: () =>
@@ -116,15 +125,6 @@ export function FrameworksPage() {
     },
   });
 
-  const domains = useMemo(
-    () => frameworkDetailRes?.domains || [],
-    [frameworkDetailRes]
-  );
-  const customDomains = useMemo(
-    () => customDomainsRes?.domains || [],
-    [customDomainsRes]
-  );
-
   const domainStats = useMemo(() => {
     return domains.map((domain) => {
       const total = domain.elements?.length || 0;
@@ -168,7 +168,7 @@ export function FrameworksPage() {
       <div className="mx-auto max-w-6xl px-6 py-6">
         <header className="mb-6">
           <h1 className="font-heading text-2xl font-semibold text-slate-50">
-            Rubric Frameworks
+            Frameworks
           </h1>
           <p className="mt-1 text-sm text-slate-400">
             Choose the rubric framework and focus domains that drive scoring and
