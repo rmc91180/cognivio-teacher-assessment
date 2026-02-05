@@ -12,7 +12,7 @@ const FRAMEWORK_LABELS = {
 
 export function FrameworksPage() {
   const queryClient = useQueryClient();
-  const { data: frameworksRes } = useQuery({
+  const { data: frameworksRes, isLoading: frameworksLoading, isError: frameworksError } = useQuery({
     queryKey: ["frameworks"],
     queryFn: () => frameworkApi.list().then((res) => res.data),
   });
@@ -24,13 +24,13 @@ export function FrameworksPage() {
 
   const [frameworkType, setFrameworkType] = useState("danielson");
 
-  const { data: frameworkDetailRes, isLoading: frameworkLoading } = useQuery({
+  const { data: frameworkDetailRes, isLoading: frameworkLoading, isError: frameworkError } = useQuery({
     queryKey: ["framework-detail", frameworkType],
     queryFn: () => frameworkApi.get(frameworkType).then((res) => res.data),
     enabled: Boolean(frameworkType),
   });
 
-  const { data: customDomainsRes } = useQuery({
+  const { data: customDomainsRes, isLoading: customDomainsLoading } = useQuery({
     queryKey: ["custom-domains"],
     queryFn: () => frameworkApi.listCustomDomains().then((res) => res.data),
   });
@@ -180,26 +180,34 @@ export function FrameworksPage() {
           <h2 className="mb-3 text-sm font-semibold text-slate-200">
             Framework selection
           </h2>
-          <div className="flex flex-wrap gap-2">
-            {(frameworksRes?.frameworks || []).map((f) => (
-              <button
-                key={f.type}
-                type="button"
-                onClick={() => handleFrameworkChange(f.type)}
-                className={[
-                  "rounded-md border px-3 py-2 text-xs transition-colors",
-                  frameworkType === f.type
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800",
-                ].join(" ")}
-              >
-                {FRAMEWORK_LABELS[f.type] || f.name}
-                <span className="ml-2 text-[10px] text-slate-400">
-                  {f.domain_count} domains
-                </span>
-              </button>
-            ))}
-          </div>
+          {frameworksLoading ? (
+            <div className="text-xs text-slate-400">Loading frameworks...</div>
+          ) : frameworksError ? (
+            <div className="text-xs text-rose-300">
+              Failed to load frameworks. Please refresh.
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {(frameworksRes?.frameworks || []).map((f) => (
+                <button
+                  key={f.type}
+                  type="button"
+                  onClick={() => handleFrameworkChange(f.type)}
+                  className={[
+                    "rounded-md border px-3 py-2 text-xs transition-colors",
+                    frameworkType === f.type
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800",
+                  ].join(" ")}
+                >
+                  {FRAMEWORK_LABELS[f.type] || f.name}
+                  <span className="ml-2 text-[10px] text-slate-400">
+                    {f.domain_count} domains
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="rounded-xl border border-slate-800 bg-slate-950/70 p-5">
@@ -224,6 +232,10 @@ export function FrameworksPage() {
 
           {frameworkLoading ? (
             <div className="text-sm text-slate-400">Loading framework...</div>
+          ) : frameworkError ? (
+            <div className="text-sm text-rose-300">
+              Failed to load framework details. Please refresh.
+            </div>
           ) : (
             <div className="space-y-4">
               {frameworkType === "custom" && (
@@ -267,7 +279,11 @@ export function FrameworksPage() {
                         : "Add custom domain"}
                     </button>
                   </div>
-                  {customDomains.length > 0 && (
+                  {customDomainsLoading ? (
+                    <div className="mt-4 text-xs text-slate-400">
+                      Loading custom domains...
+                    </div>
+                  ) : customDomains.length > 0 ? (
                     <div className="mt-4 space-y-2">
                       {customDomains.map((domain) => (
                         <div
@@ -293,6 +309,10 @@ export function FrameworksPage() {
                           </button>
                         </div>
                       ))}
+                    </div>
+                  ) : (
+                    <div className="mt-4 text-xs text-slate-400">
+                      No custom domains yet.
                     </div>
                   )}
                 </div>

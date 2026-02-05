@@ -36,12 +36,7 @@ export function DashboardPage() {
   const [selectedElementsState, setSelectedElementsState] = useState([]);
   const [selectedDomains, setSelectedDomains] = useState([]);
 
-  // State for customizable focus areas
-  const [customFocusAreas, setCustomFocusAreas] = useState(() => {
-    const saved = localStorage.getItem("dashboardFocusAreas");
-    return saved ? JSON.parse(saved) : null;
-  });
-  const [showFocusSelector, setShowFocusSelector] = useState(false);
+  // Focus areas are driven by framework selection
   const seedDemoMutation = useMutation({
     mutationFn: () => assessmentApi.seedDemoData(),
     onSuccess: (res) => {
@@ -70,16 +65,9 @@ export function DashboardPage() {
 
   // Use custom focus areas if set, otherwise default to first 3
   const focusElementIds = useMemo(
-    () => customFocusAreas || selectedElementsState.slice(0, 3),
-    [customFocusAreas, selectedElementsState]
+    () => selectedElementsState.slice(0, 3),
+    [selectedElementsState]
   );
-
-  // Save focus areas to localStorage when changed
-  useEffect(() => {
-    if (customFocusAreas) {
-      localStorage.setItem("dashboardFocusAreas", JSON.stringify(customFocusAreas));
-    }
-  }, [customFocusAreas]);
 
   const frameworkDomains = useMemo(
     () => frameworkDetailRes?.domains || [],
@@ -143,25 +131,6 @@ export function DashboardPage() {
     });
   }, [frameworkDomains, selectedElementsState]);
 
-  const toggleFocusArea = (elementId) => {
-    setCustomFocusAreas((prev) => {
-      const current = prev || selectedElementsState.slice(0, 3);
-      if (current.includes(elementId)) {
-        return current.filter((id) => id !== elementId);
-      }
-      if (current.length >= 5) {
-        // Max 5 focus areas
-        return current;
-      }
-      return [...current, elementId];
-    });
-  };
-
-  const resetFocusAreas = () => {
-    setCustomFocusAreas(null);
-    localStorage.removeItem("dashboardFocusAreas");
-  };
-
   const focusAreaData = useMemo(() => {
     if (!roster.length || !focusElementIds.length) return [];
     return focusElementIds.map((id) => {
@@ -221,76 +190,6 @@ export function DashboardPage() {
             >
               {seedDemoMutation.isPending ? "Seeding data..." : "Seed demo data"}
             </button>
-            <button
-              type="button"
-              onClick={() => setShowFocusSelector(!showFocusSelector)}
-              className="inline-flex items-center gap-2 rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 hover:bg-slate-800"
-            >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-                />
-              </svg>
-              Customize Focus Areas
-            </button>
-            {showFocusSelector && (
-              <div className="absolute right-0 top-full z-20 mt-2 w-72 rounded-lg border border-slate-700 bg-slate-900 p-4 shadow-xl">
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-xs font-semibold text-slate-200">
-                    Select Focus Areas (max 5)
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={resetFocusAreas}
-                    className="text-[10px] text-slate-400 hover:text-slate-200"
-                  >
-                    Reset to default
-                  </button>
-                </div>
-                <div className="max-h-48 space-y-1 overflow-y-auto">
-                  {focusSelectableElements.map((elementId) => {
-                    const isSelected = focusElementIds.includes(elementId);
-                    return (
-                      <label
-                        key={elementId}
-                        className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-slate-800"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleFocusArea(elementId)}
-                          className="h-3.5 w-3.5 rounded border-slate-600 bg-slate-800 text-primary focus:ring-primary/40"
-                        />
-                        <span
-                          className={
-                            isSelected ? "text-slate-100" : "text-slate-400"
-                          }
-                        >
-                          {elementId.toUpperCase()}
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-                <div className="mt-3 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setShowFocusSelector(false)}
-                    className="rounded bg-primary px-3 py-1 text-[11px] font-medium text-white hover:bg-primary/90"
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </header>
 
