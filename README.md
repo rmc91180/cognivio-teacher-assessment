@@ -1,3 +1,13 @@
+# Cognivio
+
+This repository contains multiple applications:
+
+- `backend/`: FastAPI backend for the Cognivio platform.
+- `frontend/`: React (CRA) frontend for the Cognivio platform.
+- `admin-teacher-assessment/`: Admin teacher assessment app (React + Vite + Node/Express).
+
+The details below describe the Admin Teacher Assessment Platform.
+
 # Admin Teacher Assessment Platform
 
 A comprehensive teacher assessment platform that uses AI-powered video analysis to evaluate teaching performance against educational frameworks (Danielson and Marshall rubrics).

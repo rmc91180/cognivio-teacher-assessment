@@ -1,0 +1,11 @@
+[build]
+builder = "nixpacks"
+
+[build.nixpacks]
+installPkgs = ["python311Full", "libGL", "glib"]
+aptPkgs = ["libgl1", "libglib2.0-0", "libxcb1"]
+
+[deploy]
+startCommand = "uvicorn server:app --host 0.0.0.0 --port $PORT"
+healthcheckPath = "/health"
+restartPolicyType = "ON_FAILURE"
