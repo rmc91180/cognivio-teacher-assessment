@@ -116,8 +116,14 @@ export function FrameworksPage() {
     },
   });
 
-  const domains = frameworkDetailRes?.domains || [];
-  const customDomains = customDomainsRes?.domains || [];
+  const domains = useMemo(
+    () => frameworkDetailRes?.domains || [],
+    [frameworkDetailRes]
+  );
+  const customDomains = useMemo(
+    () => customDomainsRes?.domains || [],
+    [customDomainsRes]
+  );
 
   const domainStats = useMemo(() => {
     return domains.map((domain) => {

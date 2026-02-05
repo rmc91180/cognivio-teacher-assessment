@@ -81,10 +81,14 @@ export function DashboardPage() {
     }
   }, [customFocusAreas]);
 
-  const frameworkDomains = frameworkDetailRes?.domains || [];
-  const focusSelectableElements = useMemo(() => {
-    return selectedElementsState.length ? selectedElementsState : selectedElements;
-  }, [selectedElementsState, selectedElements]);
+  const frameworkDomains = useMemo(
+    () => frameworkDetailRes?.domains || [],
+    [frameworkDetailRes]
+  );
+  const focusSelectableElements = useMemo(
+    () => (selectedElementsState.length ? selectedElementsState : selectedElements),
+    [selectedElementsState, selectedElements]
+  );
 
   useEffect(() => {
     if (selectedElements.length) {
