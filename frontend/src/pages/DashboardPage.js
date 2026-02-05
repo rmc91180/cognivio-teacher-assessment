@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { assessmentApi } from "@/lib/api";
 import { LayoutShell } from "@/components/LayoutShell";
 import {
@@ -13,8 +13,10 @@ import {
   YAxis,
 } from "recharts";
 import { TrendIndicator } from "@/components/TrendIndicator";
+import { toast } from "sonner";
 
 export function DashboardPage() {
+  const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["roster"],
     queryFn: () => assessmentApi.roster().then((res) => res.data),
@@ -29,6 +31,16 @@ export function DashboardPage() {
     return saved ? JSON.parse(saved) : null;
   });
   const [showFocusSelector, setShowFocusSelector] = useState(false);
+  const seedDemoMutation = useMutation({
+    mutationFn: () => assessmentApi.seedDemoData(),
+    onSuccess: (res) => {
+      toast.success(res?.data?.message || "Demo data created");
+      queryClient.invalidateQueries();
+    },
+    onError: () => {
+      toast.error("Failed to seed demo data");
+    },
+  });
 
   // Use custom focus areas if set, otherwise default to first 3
   const focusElementIds = useMemo(
@@ -112,7 +124,15 @@ export function DashboardPage() {
               departments.
             </p>
           </div>
-          <div className="relative">
+          <div className="relative flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => seedDemoMutation.mutate()}
+              disabled={seedDemoMutation.isPending}
+              className="inline-flex items-center gap-2 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 hover:bg-emerald-500/20 disabled:opacity-60"
+            >
+              {seedDemoMutation.isPending ? "Seeding data..." : "Seed demo data"}
+            </button>
             <button
               type="button"
               onClick={() => setShowFocusSelector(!showFocusSelector)}

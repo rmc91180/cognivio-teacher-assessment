@@ -48,6 +48,7 @@ export const assessmentApi = {
   list: (params) => api.get("/api/assessments", { params }),
   get: (id) => api.get(`/api/assessments/${id}`),
   roster: (params) => api.get("/api/roster", { params }),
+  seedDemoData: () => api.post("/api/seed-demo-data"),
   teacherDashboard: (teacherId, params) =>
     api.get(`/api/teachers/${teacherId}/dashboard`, { params }),
   teacherSummaryInsights: (teacherId) =>
