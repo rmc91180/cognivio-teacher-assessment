@@ -74,5 +74,12 @@ export const observationApi = {
   update: (id, payload) => api.patch(`/api/observations/${id}`, payload),
 };
 
+export const frameworkApi = {
+  list: () => api.get("/api/frameworks"),
+  get: (frameworkType) => api.get(`/api/frameworks/${frameworkType}`),
+  currentSelection: () => api.get("/api/frameworks/selection/current"),
+  saveSelection: (payload) => api.post("/api/frameworks/selection", payload),
+};
+
 export default api;
 

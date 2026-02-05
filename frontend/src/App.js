@@ -9,6 +9,7 @@ import { VideosPage } from "@/pages/VideosPage";
 import { TeacherProfilePage } from "@/pages/TeacherProfilePage";
 import { MasterSchedulePage } from "@/pages/MasterSchedulePage";
 import { VideoPlayerPage } from "@/pages/VideoPlayerPage";
+import { FrameworksPage } from "@/pages/FrameworksPage";
 
 function App() {
   return (
@@ -52,6 +53,14 @@ function App() {
           element={
             <ProtectedRoute>
               <VideoPlayerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/frameworks"
+          element={
+            <ProtectedRoute>
+              <FrameworksPage />
             </ProtectedRoute>
           }
         />
