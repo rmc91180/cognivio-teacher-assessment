@@ -102,7 +102,7 @@ export function TeachersPage() {
     });
   };
 
-  const teachers = teachersData ?? [];
+  const teachers = useMemo(() => teachersData ?? [], [teachersData]);
   const rosterByTeacher = useMemo(() => {
     const map = {};
     rosterData?.roster?.forEach((row) => {

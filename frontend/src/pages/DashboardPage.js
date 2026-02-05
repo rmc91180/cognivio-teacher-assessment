@@ -20,8 +20,8 @@ export function DashboardPage() {
     queryFn: () => assessmentApi.roster().then((res) => res.data),
   });
 
-  const roster = data?.roster ?? [];
-  const selectedElements = data?.selected_elements ?? [];
+  const roster = useMemo(() => data?.roster ?? [], [data]);
+  const selectedElements = useMemo(() => data?.selected_elements ?? [], [data]);
 
   // State for customizable focus areas
   const [customFocusAreas, setCustomFocusAreas] = useState(() => {
@@ -31,7 +31,10 @@ export function DashboardPage() {
   const [showFocusSelector, setShowFocusSelector] = useState(false);
 
   // Use custom focus areas if set, otherwise default to first 3
-  const focusElementIds = customFocusAreas || selectedElements.slice(0, 3);
+  const focusElementIds = useMemo(
+    () => customFocusAreas || selectedElements.slice(0, 3),
+    [customFocusAreas, selectedElements]
+  );
 
   // Save focus areas to localStorage when changed
   useEffect(() => {

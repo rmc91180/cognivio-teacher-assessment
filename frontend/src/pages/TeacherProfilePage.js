@@ -82,7 +82,7 @@ export function TeacherProfilePage() {
 
   const elementSummary = dashboardRes?.element_summary ?? [];
   const videos = dashboardRes?.videos ?? [];
-  const observations = observationsRes ?? [];
+  const observations = useMemo(() => observationsRes ?? [], [observationsRes]);
 
   const observationsByElement = useMemo(() => {
     const map = {};
