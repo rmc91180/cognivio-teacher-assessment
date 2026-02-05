@@ -15,7 +15,11 @@ import jwt
 import bcrypt
 import json
 import base64
-import cv2
+try:
+    import cv2
+except Exception as exc:
+    cv2 = None
+    _cv2_import_error = exc
 import aiofiles
 import asyncio
 from enum import Enum
@@ -1325,6 +1329,9 @@ def extract_video_frames(video_path: str, max_frames: int = 5) -> List[str]:
     """Extract frames from video and return as base64 strings"""
     frames = []
     try:
+        if cv2 is None:
+            logger.error(f"OpenCV not available: {_cv2_import_error}")
+            return frames
         cap = cv2.VideoCapture(video_path)
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         
