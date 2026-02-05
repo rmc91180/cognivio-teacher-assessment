@@ -1,6 +1,30 @@
 [phases.setup]
-nixPkgs = ["python311Full", "python311Packages.pip", "gcc", "libGL", "glib", "xorg.libxcb"]
-aptPkgs = ["libgl1", "libglib2.0-0", "libxcb1"]
+nixPkgs = [
+  "python311Full",
+  "python311Packages.pip",
+  "gcc",
+  "libGL",
+  "glib",
+  "xorg.libxcb",
+  "xorg.libX11",
+  "xorg.libXext",
+  "xorg.libXrender",
+  "xorg.libXau",
+  "xorg.libXdmcp",
+]
+aptPkgs = [
+  "libgl1",
+  "libglib2.0-0",
+  "libxcb1",
+  "libx11-6",
+  "libxext6",
+  "libxrender1",
+  "libxau6",
+  "libxdmcp6",
+  "libsm6",
+  "libice6",
+  "libxfixes3",
+]
 
 [phases.install]
 cmds = [
