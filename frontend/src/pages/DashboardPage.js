@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { assessmentApi } from "@/lib/api";
+import { assessmentApi, frameworkApi } from "@/lib/api";
 import { LayoutShell } from "@/components/LayoutShell";
 import {
   Bar,
@@ -21,9 +21,20 @@ export function DashboardPage() {
     queryKey: ["roster"],
     queryFn: () => assessmentApi.roster().then((res) => res.data),
   });
+  const { data: frameworkSelectionRes } = useQuery({
+    queryKey: ["framework-selection"],
+    queryFn: () => frameworkApi.currentSelection().then((res) => res.data),
+  });
+  const frameworkType = frameworkSelectionRes?.framework_type || "danielson";
+  const { data: frameworkDetailRes, isLoading: frameworkLoading } = useQuery({
+    queryKey: ["framework-detail", frameworkType],
+    queryFn: () => frameworkApi.get(frameworkType).then((res) => res.data),
+  });
 
   const roster = useMemo(() => data?.roster ?? [], [data]);
   const selectedElements = useMemo(() => data?.selected_elements ?? [], [data]);
+  const [selectedElementsState, setSelectedElementsState] = useState([]);
+  const [selectedDomains, setSelectedDomains] = useState([]);
 
   // State for customizable focus areas
   const [customFocusAreas, setCustomFocusAreas] = useState(() => {
@@ -41,11 +52,26 @@ export function DashboardPage() {
       toast.error("Failed to seed demo data");
     },
   });
+  const saveDomainSelectionMutation = useMutation({
+    mutationFn: () =>
+      frameworkApi.saveSelection({
+        framework_type: frameworkType,
+        selected_elements: selectedElementsState,
+      }),
+    onSuccess: () => {
+      toast.success("Focus domains updated");
+      queryClient.invalidateQueries({ queryKey: ["framework-selection"] });
+      queryClient.invalidateQueries({ queryKey: ["roster"] });
+    },
+    onError: () => {
+      toast.error("Failed to update focus domains");
+    },
+  });
 
   // Use custom focus areas if set, otherwise default to first 3
   const focusElementIds = useMemo(
-    () => customFocusAreas || selectedElements.slice(0, 3),
-    [customFocusAreas, selectedElements]
+    () => customFocusAreas || selectedElementsState.slice(0, 3),
+    [customFocusAreas, selectedElementsState]
   );
 
   // Save focus areas to localStorage when changed
@@ -55,9 +81,67 @@ export function DashboardPage() {
     }
   }, [customFocusAreas]);
 
+  const frameworkDomains = frameworkDetailRes?.domains || [];
+  const focusSelectableElements = useMemo(() => {
+    return selectedElementsState.length ? selectedElementsState : selectedElements;
+  }, [selectedElementsState, selectedElements]);
+
+  useEffect(() => {
+    if (selectedElements.length) {
+      setSelectedElementsState(selectedElements);
+    } else if (frameworkSelectionRes?.selected_elements) {
+      setSelectedElementsState(frameworkSelectionRes.selected_elements);
+    }
+  }, [selectedElements, frameworkSelectionRes]);
+
+  useEffect(() => {
+    if (!frameworkDomains.length) {
+      setSelectedDomains([]);
+      return;
+    }
+    const domainIds = frameworkDomains
+      .filter((domain) =>
+        (domain.elements || []).some((el) =>
+          selectedElementsState.includes(el.id)
+        )
+      )
+      .map((domain) => domain.id);
+    setSelectedDomains(domainIds);
+  }, [frameworkDomains, selectedElementsState]);
+
+  const toggleDomainSelection = (domain) => {
+    const elementIds = (domain.elements || []).map((el) => el.id);
+    if (!elementIds.length) {
+      return;
+    }
+    const allSelected = elementIds.every((id) =>
+      selectedElementsState.includes(id)
+    );
+    const nextSelected = allSelected
+      ? selectedElementsState.filter((id) => !elementIds.includes(id))
+      : Array.from(new Set([...selectedElementsState, ...elementIds]));
+    const nextDomainIds = frameworkDomains
+      .filter((d) =>
+        (d.elements || []).some((el) => nextSelected.includes(el.id))
+      )
+      .map((d) => d.id);
+    setSelectedElementsState(nextSelected);
+    setSelectedDomains(nextDomainIds);
+  };
+
+  const focusDomainStats = useMemo(() => {
+    return frameworkDomains.map((domain) => {
+      const total = domain.elements?.length || 0;
+      const selected = domain.elements?.filter((el) =>
+        selectedElementsState.includes(el.id)
+      ).length;
+      return { id: domain.id, selected, total };
+    });
+  }, [frameworkDomains, selectedElementsState]);
+
   const toggleFocusArea = (elementId) => {
     setCustomFocusAreas((prev) => {
-      const current = prev || selectedElements.slice(0, 3);
+      const current = prev || selectedElementsState.slice(0, 3);
       if (current.includes(elementId)) {
         return current.filter((id) => id !== elementId);
       }
@@ -168,7 +252,7 @@ export function DashboardPage() {
                   </button>
                 </div>
                 <div className="max-h-48 space-y-1 overflow-y-auto">
-                  {selectedElements.map((elementId) => {
+                  {focusSelectableElements.map((elementId) => {
                     const isSelected = focusElementIds.includes(elementId);
                     return (
                       <label
@@ -215,6 +299,59 @@ export function DashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
+            <section className="md:col-span-12 rounded-xl border border-slate-800 bg-slate-950/70 p-5">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-200">
+                    Focus domains
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Selected domains power roster scoring and dashboard focus
+                    areas.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => saveDomainSelectionMutation.mutate()}
+                  disabled={saveDomainSelectionMutation.isPending}
+                  className="rounded-md bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
+                >
+                  {saveDomainSelectionMutation.isPending
+                    ? "Saving..."
+                    : "Save focus domains"}
+                </button>
+              </div>
+              {frameworkLoading ? (
+                <div className="text-xs text-slate-400">
+                  Loading framework domains...
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {frameworkDomains.map((domain) => {
+                    const stats = focusDomainStats.find((d) => d.id === domain.id);
+                    const allSelected = stats?.selected === stats?.total && stats?.total > 0;
+                    return (
+                      <button
+                        key={domain.id}
+                        type="button"
+                        onClick={() => toggleDomainSelection(domain)}
+                        className={[
+                          "rounded-lg border px-4 py-3 text-left transition-colors",
+                          allSelected
+                            ? "border-primary/70 bg-primary/10 text-primary"
+                            : "border-slate-800 bg-slate-900 text-slate-200 hover:bg-slate-800",
+                        ].join(" ")}
+                      >
+                        <div className="text-sm font-semibold">{domain.name}</div>
+                        <div className="mt-1 text-[11px] text-slate-400">
+                          {stats?.selected || 0} of {stats?.total || 0} elements selected
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
             <section className="md:col-span-7 rounded-xl border border-slate-800 bg-slate-950/70 p-5">
               <h2 className="mb-2 text-sm font-semibold text-slate-200">
                 School focus areas
