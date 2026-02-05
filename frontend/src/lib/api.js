@@ -79,6 +79,10 @@ export const frameworkApi = {
   get: (frameworkType) => api.get(`/api/frameworks/${frameworkType}`),
   currentSelection: () => api.get("/api/frameworks/selection/current"),
   saveSelection: (payload) => api.post("/api/frameworks/selection", payload),
+  listCustomDomains: () => api.get("/api/frameworks/custom-domains"),
+  createCustomDomain: (payload) => api.post("/api/frameworks/custom-domains", payload),
+  deleteCustomDomain: (domainId) =>
+    api.delete(`/api/frameworks/custom-domains/${domainId}`),
 };
 
 export default api;

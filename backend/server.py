@@ -263,6 +263,15 @@ class FrameworkSelection(BaseModel):
     framework_type: FrameworkType
     selected_elements: List[str]
 
+
+class CustomElementCreate(BaseModel):
+    name: str
+
+
+class CustomDomainCreate(BaseModel):
+    name: str
+    elements: List[CustomElementCreate]
+
 class VideoUploadResponse(BaseModel):
     id: str
     filename: str
@@ -461,28 +470,76 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 
 # ==================== FRAMEWORK ENDPOINTS ====================
 @api_router.get("/frameworks")
-async def get_frameworks():
+async def get_frameworks(current_user: dict = Depends(get_current_user)):
+    custom_domain_count = await db.custom_domains.count_documents(
+        {"user_id": current_user["id"]}
+    )
     return {
         "frameworks": [
             {"type": "danielson", "name": "Danielson Framework", "domain_count": 4},
             {"type": "marshall", "name": "Marshall Rubrics", "domain_count": 6},
-            {"type": "custom", "name": "Custom (Mix of Both)", "domain_count": 10}
+            {
+                "type": "custom",
+                "name": "Custom (User defined)",
+                "domain_count": custom_domain_count,
+            },
         ]
     }
 
 @api_router.get("/frameworks/{framework_type}")
-async def get_framework_details(framework_type: FrameworkType):
+async def get_framework_details(
+    framework_type: FrameworkType, current_user: dict = Depends(get_current_user)
+):
     if framework_type == FrameworkType.DANIELSON:
         return DANIELSON_FRAMEWORK
     elif framework_type == FrameworkType.MARSHALL:
         return MARSHALL_FRAMEWORK
     else:
-        # Custom combines both
-        return {
-            "name": "Custom Framework",
-            "type": "custom",
-            "domains": DANIELSON_FRAMEWORK["domains"] + MARSHALL_FRAMEWORK["domains"]
-        }
+        domains = await db.custom_domains.find(
+            {"user_id": current_user["id"]}, {"_id": 0, "user_id": 0}
+        ).to_list(1000)
+        return {"name": "Custom Framework", "type": "custom", "domains": domains}
+
+
+@api_router.get("/frameworks/custom-domains")
+async def list_custom_domains(current_user: dict = Depends(get_current_user)):
+    domains = await db.custom_domains.find(
+        {"user_id": current_user["id"]}, {"_id": 0, "user_id": 0}
+    ).to_list(1000)
+    return {"domains": domains}
+
+
+@api_router.post("/frameworks/custom-domains")
+async def create_custom_domain(
+    payload: CustomDomainCreate, current_user: dict = Depends(get_current_user)
+):
+    domain_id = f"c{uuid.uuid4().hex[:8]}"
+    elements = [
+        {"id": f"{domain_id}-{idx+1}", "name": el.name}
+        for idx, el in enumerate(payload.elements)
+    ]
+    domain_doc = {
+        "id": domain_id,
+        "name": payload.name,
+        "elements": elements,
+        "user_id": current_user["id"],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.custom_domains.insert_one(domain_doc)
+    domain_doc.pop("user_id", None)
+    return {"domain": domain_doc}
+
+
+@api_router.delete("/frameworks/custom-domains/{domain_id}")
+async def delete_custom_domain(
+    domain_id: str, current_user: dict = Depends(get_current_user)
+):
+    result = await db.custom_domains.delete_one(
+        {"id": domain_id, "user_id": current_user["id"]}
+    )
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Domain not found")
+    return {"message": "Domain deleted"}
 
 @api_router.post("/frameworks/selection")
 async def save_framework_selection(selection: FrameworkSelection, current_user: dict = Depends(get_current_user)):
@@ -507,15 +564,23 @@ async def get_current_selection(current_user: dict = Depends(get_current_user)):
         {"_id": 0}
     )
     if not selection:
-        # Return default with all elements selected
+        # Return default with all Danielson elements selected
         all_elements = []
         for domain in DANIELSON_FRAMEWORK["domains"]:
             for element in domain["elements"]:
                 all_elements.append(element["id"])
-        return {
-            "framework_type": "danielson",
-            "selected_elements": all_elements
-        }
+        return {"framework_type": "danielson", "selected_elements": all_elements}
+
+    if selection.get("framework_type") == "custom" and not selection.get(
+        "selected_elements"
+    ):
+        domains = await db.custom_domains.find(
+            {"user_id": current_user["id"]}, {"_id": 0, "user_id": 0}
+        ).to_list(1000)
+        element_ids = [
+            el["id"] for domain in domains for el in domain.get("elements", [])
+        ]
+        selection["selected_elements"] = element_ids
     return selection
 
 # ==================== TEACHER ENDPOINTS ====================
