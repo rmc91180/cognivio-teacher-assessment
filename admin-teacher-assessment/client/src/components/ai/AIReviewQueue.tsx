@@ -17,13 +17,14 @@ import {
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { AIConfidenceBadge } from '@/components/ai/AIConfidenceBadge';
+import { SuggestionImpactTag } from '@/components/ai/SuggestionImpactTag';
 import { useSuggestionsStore } from '@/store/suggestionsStore';
 import type {
   AISuggestion,
   SuggestionStatus,
   SuggestionPriority,
   SuggestionType,
-  PatternType,
 } from '@/types';
 
 interface AIReviewQueueProps {
@@ -150,27 +151,12 @@ export const AIReviewQueue: React.FC<AIReviewQueueProps> = ({
     setRejectModalOpen(true);
   };
 
-  const priorityColors = {
-    high: 'bg-red-100 text-red-700 border-red-200',
-    medium: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    low: 'bg-gray-100 text-gray-600 border-gray-200',
-  };
-
   const typeIcons = {
     observation: Brain,
     coaching: Sparkles,
     resource: CheckCircle,
     intervention: AlertTriangle,
     recognition: ThumbsUp,
-  };
-
-  const patternLabels: Record<PatternType, string> = {
-    declining_trend: 'Declining Trend',
-    consistent_low: 'Consistently Low',
-    improvement_stall: 'Improvement Stalled',
-    high_performer: 'High Performer',
-    volatile_scores: 'Volatile Scores',
-    new_teacher: 'New Teacher',
   };
 
   const SuggestionCard = ({ suggestion }: { suggestion: AISuggestion }) => {
@@ -215,19 +201,10 @@ export const AIReviewQueue: React.FC<AIReviewQueueProps> = ({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h4 className="font-medium text-gray-900">{suggestion.title}</h4>
-                <span
-                  className={clsx(
-                    'text-xs px-2 py-0.5 rounded-full border',
-                    priorityColors[suggestion.priority]
-                  )}
-                >
-                  {suggestion.priority}
-                </span>
-                {suggestion.patternDetected && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 border border-primary-200">
-                    {patternLabels[suggestion.patternDetected]}
-                  </span>
-                )}
+                <SuggestionImpactTag
+                  priority={suggestion.priority}
+                  pattern={suggestion.patternDetected}
+                />
               </div>
 
               <p className="text-sm text-gray-500 mt-1 line-clamp-2">
@@ -251,11 +228,7 @@ export const AIReviewQueue: React.FC<AIReviewQueueProps> = ({
                   <Calendar className="w-3 h-3" />
                   {new Date(suggestion.createdAt).toLocaleDateString()}
                 </span>
-                {suggestion.confidenceScore && (
-                  <span>
-                    Confidence: {Math.round(suggestion.confidenceScore * 100)}%
-                  </span>
-                )}
+                <AIConfidenceBadge confidence={suggestion.confidenceScore} />
               </div>
             </div>
 

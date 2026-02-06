@@ -21,6 +21,7 @@ import { ColorChip } from '@/components/ui/ColorChip';
 import { AIFeedbackForm } from '@/components/shared/AIFeedbackForm';
 import { AIInsightsPanel } from '@/components/ai/AIInsightsPanel';
 import { EnhancedTrendChart } from '@/components/ui/EnhancedTrendChart';
+import { AILearningHistoryTimeline } from '@/components/ui/AILearningHistoryTimeline';
 import { FeedbackHistory } from '@/components/feedback/FeedbackHistory';
 import { FeedbackComposer } from '@/components/feedback/FeedbackComposer';
 import { teachersApi, settingsApi } from '@/services/api';
@@ -559,6 +560,9 @@ export const TeacherDashboard: React.FC = () => {
           }}
         />
       )}
+
+      {/* AI Learning History */}
+      {teacherId && <AILearningHistoryTimeline teacherId={teacherId} />}
 
       {/* Feedback Composer Modal */}
       {showFeedbackComposer && teacherId && (
